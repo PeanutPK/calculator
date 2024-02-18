@@ -1,5 +1,7 @@
 import tkinter as tk
 from math import *
+from pygame import mixer
+from tkinter import ttk
 from keypad import Keypad
 
 OPTION = {'sticky': tk.NSEW, 'ipadx': 2, 'ipady': 2, 'padx': 2, 'pady': 2}
@@ -14,7 +16,11 @@ class CalculatorUI(tk.Tk):
 
     def __init__(self):
         super().__init__()
+        mixer.init()
         self.attributes('-topmost', True)
+
+        self.current_fx = tk.StringVar()
+        self.combobox = ttk.Combobox(self, textvariable=self.current_fx)
 
         self.display_text = tk.StringVar()
         self.calculate_list = []
@@ -34,29 +40,34 @@ class CalculatorUI(tk.Tk):
         fills the available columns left-to-right, adding as many
         rows as needed.
         """
-        button_numbers = ["CLR", "DEL", "mod", "7", "8", "9", "4", "5", "6",
-                          "1", "2", "3", "(", "0", ")", "sqrt", "exp", "."]
-        main_operator = ['^', '*', '/', '+', '-', '=']
-
         img = tk.PhotoImage(file="iconp.png")
         self.iconphoto(False, img)
 
-        keypad = Keypad(self, button_numbers, 3)
+        BUTTON_NUMBERS = ["DEL", "CLR", "mod", "7", "8", "9", "4", "5", "6",
+                          "1", "2", "3", '(', "0", ')', '', ".", '']
+        MAIN_OP = ['+', '-', '*', '/', "^", "="]
+        COMBOBOX_OP = ["sqrt", "EXP"]
+
+        keypad = Keypad(self, BUTTON_NUMBERS, 3)
         keypad.bind('<Button-1>', self.key_pressed)
 
-        main_operator = Keypad(self, main_operator, 1)
-        main_operator.bind('<Button-1>', self.key_pressed)
+        main_operators = Keypad(self, MAIN_OP, 1)
+        main_operators.bind('<Button-1>', self.key_pressed)
 
-        keypad.configure(bg='white', fg='#B784B7')
-        main_operator.configure(bg='white', fg='#B784B7')
+        self.combobox['values'] = COMBOBOX_OP
+        self.combobox.bind('<<ComboboxSelected>>', self.key_pressed)
+
+        keypad.configure(**BUTTONCOLOR)
+        main_operators.configure(**BUTTONCOLOR)
 
         keypad.config(**BGCOLOR)
-        main_operator.config(**BGCOLOR)
+        main_operators.config(**BGCOLOR)
 
         self.display_text.set("")
         self.display_label.pack(side=tk.TOP, **PACK)
+        self.combobox.pack(side=tk.TOP, **PACK)
         keypad.pack(side=tk.LEFT, **PACK)
-        main_operator.pack(side=tk.TOP, **PACK)
+        main_operators.pack(side=tk.TOP, **PACK)
 
     def make_display(self) -> tk.Frame:
         frame = tk.Frame(self)
@@ -71,27 +82,38 @@ class CalculatorUI(tk.Tk):
         label.pack(**PACK, side=tk.LEFT)
         return frame
 
+    def combo_select(self):
+        selected_fx = self.combobox.get()
+
     def key_pressed(self, event):
         widget = event.widget
-        self.calculation(widget['text'])
+        mixer.Sound('press_sound.wav').play()
+        if isinstance(widget, tk.Button):
+            self.calculation(widget['text'])
+        else:
+            self.calculation(self.current_fx.get())
 
     def calculation(self, widget):
+        if (self.calculate_list and not self.calculate_list[-1].isdigit()
+                and widget in ['+', '-', '*', '/', '^'] and
+                self.calculate_list[-1] != ')'):
+            self.calculate_list.pop()
         if widget == '=':
             self.evaluation()
         elif widget == 'CLR':
             self.clear_display()
         elif widget == 'DEL':
             self.delete_last_index()
+        elif widget == '^':
+            self.calculate_list.append("^")
         elif widget == 'sqrt':
             self.handle_sqrt()
-        elif widget == '^':
-            self.calculate_list.append("**")
-        elif widget == 'exp':
+        elif widget == 'EXP':
             self.handle_expo()
         else:
             self.calculate_list.append(f"{widget}")
 
-        new_string = "".join(self.calculate_list).replace("**", "^")
+        new_string = "".join(self.calculate_list)
         self.display_text.set(new_string)
 
     def evaluation(self):
@@ -99,25 +121,37 @@ class CalculatorUI(tk.Tk):
             # set normal color text
             self.children['!frame'].children['!label'].configure(**LABEL)
             # make equation for calculation
-            equation = "".join(self.calculate_list).replace("mod", "%")
+            equation = ("".join(self.calculate_list).
+                        replace("mod", "%").
+                        replace("^", "**"))
+
             self.display_text.set(f"{eval(equation):.5g}")
             self.calculate_list = [f"{eval(equation)}"]
             self.history_list.append([equation, f"= {eval(equation):.5g}"])
 
         except SyntaxError:
-            # set red text
+            # set red text and sound
+            mixer.Sound('error.wav').play()
             self.children['!frame'].children['!label']['fg'] = 'red'
 
     def handle_sqrt(self):
-        last_index = self.calculate_list[-1]
-        if last_index.isnumeric() or last_index == ')':
-            self.calculate_list.insert(0, "sqrt(")
-            self.calculate_list.append(")")
-        else:
-            self.calculate_list.append("sqrt(")
+        try:
+            last_index = self.calculate_list[-1]
+            if last_index.isnumeric() or last_index == ')':
+                self.calculate_list.insert(0, "sqrt(")
+                self.calculate_list.append(")")
+            else:
+                self.calculate_list.append("sqrt(")
+        except IndexError:
+            self.current_fx.set('')
 
     def handle_expo(self):
-        self.calculate_list.append("*(10**")
+        if self.calculate_list:
+            if self.calculate_list[-1] != '*':
+                self.calculate_list.append('*')
+            self.calculate_list.append("(10**")
+        else:
+            self.current_fx.set("")
 
     def clear_display(self):
         # Set normal color text
@@ -162,4 +196,3 @@ class CalculatorUI(tk.Tk):
         for i in range(column):
             frame.columnconfigure(i, weight=1)
         return frame
-
