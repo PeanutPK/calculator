@@ -195,30 +195,3 @@ class CalculatorUI(tk.Tk):
 
     def run(self):
         self.mainloop()
-
-    def unused_upgraded_make_keypad(self, column, keys) -> tk.Frame:
-        """Create a frame containing buttons for the numeric keys.
-        This function is for making keypad without using a keypad object.
-        Using this method can create both number
-        and operation using column and keys.
-        :param column: Number of columns requires for button.
-        :param keys: List of values to put in the button.
-        """
-        frame = tk.Frame(self)
-        row_num = 0
-        column_num = 0
-        for value in keys:
-            button = tk.Button(frame, text=value, **FONT)
-            button.grid(row=row_num, column=column_num, **OPTION)
-            button.bind("<Button-1>", self.key_pressed)
-            column_num += 1
-            if column_num >= column:
-                column_num = 0
-                row_num += 1
-
-        # use rowconfigure and columnconfigure to specify weights
-        for i in range(row_num):
-            frame.rowconfigure(i, weight=1)
-        for i in range(column):
-            frame.columnconfigure(i, weight=1)
-        return frame
