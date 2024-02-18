@@ -5,12 +5,17 @@ from tkinter import ttk
 from keypad import Keypad
 from history import HistoryWindow
 
-OPTION = {'sticky': tk.NSEW, 'ipadx': 2, 'ipady': 2, 'padx': 2, 'pady': 2}
+# Constants
+OPTIONS = {'sticky': tk.NSEW, 'ipadx': 2, 'ipady': 2, 'padx': 2, 'pady': 2}
 FONT = {'font': ("Comic sans MS", 20, 'bold')}
 PACK = {'expand': True, 'fill': 'both'}
-BUTTONCOLOR = {'bg': 'white', 'fg': '#B784B7'}
-BGCOLOR = {'background': '#9290C3'}
-LABEL = {'bg': '#211951', 'fg': '#15F5BA', 'padx': 2, 'pady': 2}
+BUTTON_COLOR = {'bg': 'white', 'fg': '#B784B7'}
+BG_COLOR = {'background': '#9290C3'}
+LABEL_STYLE = {'bg': '#211951', 'fg': '#15F5BA', 'padx': 2, 'pady': 2}
+BUTTON_NUMBERS = ["DEL", "CLR", "mod", "7", "8", "9", "4", "5", "6",
+                  "1", "2", "3", '(', "0", ')', 'his', ".", 'hisCLR']
+MAIN_OP = ['+', '-', '*', '/', "^", "="]
+COMBOBOX_OP = ["sqrt", "EXP", 'log10', 'log2', 'ln']
 
 
 class CalculatorUI(tk.Tk):
@@ -41,11 +46,12 @@ class CalculatorUI(tk.Tk):
         self.iconphoto(False, img)
 
         BUTTON_NUMBERS = ["DEL", "CLR", "mod", "7", "8", "9", "4", "5", "6",
-                          "1", "2", "3", '(', "0", ')', 'his', ".", 'AC']
+                          "1", "2", "3", '(', "0", ')', 'his', ".", 'hisCLR']
         MAIN_OP = ['+', '-', '*', '/', "^", "="]
         COMBOBOX_OP = ["sqrt", "EXP", 'log10', 'log2', 'ln']
 
         keypad = Keypad(self, BUTTON_NUMBERS, 3)
+        keypad.configure(width=5)
         keypad.bind('<Button-1>', self.key_pressed)
 
         main_operators = Keypad(self, MAIN_OP, 1)
@@ -55,13 +61,13 @@ class CalculatorUI(tk.Tk):
         combobox['values'] = COMBOBOX_OP
         combobox.bind('<<ComboboxSelected>>', self.key_pressed)
 
-        keypad.configure(**BUTTONCOLOR)
-        main_operators.configure(**BUTTONCOLOR)
+        keypad.configure(**BUTTON_COLOR)
+        main_operators.configure(**BUTTON_COLOR)
         combobox.configure(background='white', foreground='#B784B7')
 
-        keypad.config(**BGCOLOR)
-        main_operators.config(**BGCOLOR)
-        combobox.config(**BGCOLOR)
+        keypad.config(**BG_COLOR)
+        main_operators.config(**BG_COLOR)
+        combobox.config(**BG_COLOR)
 
         self.display_text.set("")
         self.display_label.pack(side=tk.TOP, **PACK)
@@ -76,7 +82,7 @@ class CalculatorUI(tk.Tk):
         # make label for display
         label = tk.Label(frame, textvariable=self.display_text, **FONT,
                          anchor=tk.E, height=2)
-        label.config(**LABEL)
+        label.config(**LABEL_STYLE)
 
         # pack
         label.pack(**PACK, side=tk.LEFT)
@@ -97,7 +103,7 @@ class CalculatorUI(tk.Tk):
             self.calculate_list.pop()
         if widget == '=':
             self.evaluation()
-        elif widget == 'AC':
+        elif widget == 'hisCLR':
             self.clear_display()
             self.history_list.clear()
         elif widget == 'CLR':
@@ -123,7 +129,7 @@ class CalculatorUI(tk.Tk):
     def evaluation(self):
         try:
             # set normal color text
-            self.children['!frame'].children['!label'].configure(**LABEL)
+            self.children['!frame'].children['!label'].configure(**LABEL_STYLE)
             # make equation for calculation
             equation = ("".join(self.calculate_list).replace("mod", "%").
                         replace("^", "**").replace("ln", "log"))
@@ -175,7 +181,7 @@ class CalculatorUI(tk.Tk):
 
     def clear_display(self):
         # Set normal color text
-        self.children['!frame'].children['!label'].configure(**LABEL)
+        self.children['!frame'].children['!label'].configure(**LABEL_STYLE)
         self.calculate_list.clear()
         self.display_text.set('')
 
