@@ -148,7 +148,7 @@ class CalculatorUI(tk.Tk):
     def handle_op_special(self, op):
         try:
             last_index = self.calculate_list[-1]
-            if last_index.isnumeric() or last_index == ')':
+            if last_index.isdecimal() or last_index == ')':
                 self.calculate_list.insert(0, f"{op}(")
                 self.calculate_list.append(")")
             else:
@@ -159,7 +159,7 @@ class CalculatorUI(tk.Tk):
     def handle_ln(self):
         try:
             last_index = self.calculate_list[-1]
-            if last_index.isnumeric() or last_index == ')':
+            if last_index.isdecimal() or last_index == ')':
                 self.calculate_list.insert(0, "ln(")
                 self.calculate_list.append(")")
             else:
