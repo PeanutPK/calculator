@@ -137,7 +137,7 @@ class CalculatorUI(tk.Tk):
             result = eval(equation)
             self.display_text.set(f"{result:.5g}")
             self.calculate_list = [f"{result:.5g}"]
-            # add to history list
+            # add to a history list
             self.history_list.append(f"{equation:<20}={result:<15.5g}")
 
         except (ValueError, ZeroDivisionError, SyntaxError):
@@ -148,7 +148,7 @@ class CalculatorUI(tk.Tk):
     def handle_op_special(self, op):
         try:
             last_index = self.calculate_list[-1]
-            if last_index.isdecimal() or last_index == ')':
+            if float(last_index) or last_index == ')':
                 self.calculate_list.insert(0, f"{op}(")
                 self.calculate_list.append(")")
             else:
@@ -159,7 +159,7 @@ class CalculatorUI(tk.Tk):
     def handle_ln(self):
         try:
             last_index = self.calculate_list[-1]
-            if last_index.isdecimal() or last_index == ')':
+            if float(last_index) or last_index == ')':
                 self.calculate_list.insert(0, "ln(")
                 self.calculate_list.append(")")
             else:
