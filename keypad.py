@@ -1,3 +1,4 @@
+"""This is for creating Keypad Button"""
 import tkinter as tk
 
 FONT = {'font': ("Comic sans MS", 20, 'bold')}
@@ -6,6 +7,7 @@ OPTION = {'sticky': tk.NSEW, 'ipadx': 2, 'ipady': 2, 'padx': 2, 'pady': 2}
 
 class Keypad(tk.Frame):
     def __init__(self, parent, keynames=[], columns=1, **kwargs):
+        """Initialize the frame"""
         # keynames and columns
         super().__init__(parent, **kwargs)
         self.keynames = keynames
@@ -14,6 +16,7 @@ class Keypad(tk.Frame):
 
     @property
     def frame(self):
+        """To return the frame of the Keypad"""
         return super()
 
     def init_components(self, columns):
@@ -64,23 +67,6 @@ class Keypad(tk.Frame):
             return child[key]
 
     def configure(self, cnf=None, **kwargs):
-        """Apply configuration settings to all buttons.
-
-        To configure properties of the frame that contains the buttons,
-        use `keypad.frame.configure()`.
-        """
+        """Apply configuration settings to all buttons."""
         for child in self.winfo_children():
             child.configure(cnf, **kwargs)
-
-
-if __name__ == '__main__':
-    keys = list('789456123 0.')  # = ['7','8','9',...]
-
-    root = tk.Tk()
-    root.title("Keypad Demo")
-    keypad = Keypad(root, keynames=keys, columns=3)
-    keypad.configure(fg='blue')
-    print(keypad['fg'])
-    keypad['fg'] = 'yellow'
-    keypad.pack(expand=True, fill=tk.BOTH)
-    root.mainloop()
