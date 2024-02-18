@@ -55,6 +55,7 @@ class CalculatorUI(tk.Tk):
         keypad.bind('<Button-1>', self.key_pressed)
 
         main_operators = Keypad(self, MAIN_OP, 1)
+        main_operators.configure(width=5)
         main_operators.bind('<Button-1>', self.key_pressed)
 
         combobox = ttk.Combobox(self, textvariable=self.current_fx)
