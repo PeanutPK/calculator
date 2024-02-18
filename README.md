@@ -12,3 +12,7 @@
 ```
 python main.py
 ```
+
+### Class UML
+
+![calculator_uml](calculatorUML.jpg)

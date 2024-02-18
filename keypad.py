@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import ttk
 
 FONT = {'font': ("Comic sans MS", 20, 'bold')}
 OPTION = {'sticky': tk.NSEW, 'ipadx': 2, 'ipady': 2, 'padx': 2, 'pady': 2}
@@ -7,7 +6,6 @@ OPTION = {'sticky': tk.NSEW, 'ipadx': 2, 'ipady': 2, 'padx': 2, 'pady': 2}
 
 class Keypad(tk.Frame):
     def __init__(self, parent, keynames=[], columns=1, **kwargs):
-        # TODO call the superclass constructor with all args except
         # keynames and columns
         super().__init__(parent, **kwargs)
         self.keynames = keynames
@@ -18,7 +16,7 @@ class Keypad(tk.Frame):
     def frame(self):
         return super()
 
-    def init_components(self, columns) -> None:
+    def init_components(self, columns):
         """Create a keypad of keys using the keynames list.
         The first keyname is at the top left of the keypad and
         fills the available columns left-to-right, adding as many
