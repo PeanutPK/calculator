@@ -34,9 +34,9 @@ class CalculatorUI(tk.Tk):
         fills the available columns left-to-right, adding as many
         rows as needed.
         """
-        button_numbers = ["(", ")", "^", "7", "8", "9", "4", "5", "6", "1",
-                          "2", "3", "0", ".", "="]
-        main_operator = ['CLR', '*', '/', '+', '-']
+        button_numbers = ["CLR", "DEL", "mod", "7", "8", "9", "4", "5", "6",
+                          "1", "2", "3", "(", "0", ")", "sqrt", "exp", "."]
+        main_operator = ['^', '*', '/', '+', '-', '=']
 
         img = tk.PhotoImage(file="iconp.png")
         self.iconphoto(False, img)
@@ -57,6 +57,84 @@ class CalculatorUI(tk.Tk):
         self.display_label.pack(side=tk.TOP, **PACK)
         keypad.pack(side=tk.LEFT, **PACK)
         main_operator.pack(side=tk.TOP, **PACK)
+
+    def make_display(self) -> tk.Frame:
+        frame = tk.Frame(self)
+        frame.configure(highlightbackground='#9290C3', highlightthickness=2)
+
+        # make label for display
+        label = tk.Label(frame, textvariable=self.display_text, **FONT,
+                         anchor=tk.E, height=2)
+        label.config(**LABEL)
+
+        # pack
+        label.pack(**PACK, side=tk.LEFT)
+        return frame
+
+    def key_pressed(self, event):
+        widget = event.widget
+        self.calculation(widget['text'])
+
+    def calculation(self, widget):
+        if widget == '=':
+            self.evaluation()
+        elif widget == 'CLR':
+            self.clear_display()
+        elif widget == 'DEL':
+            self.delete_last_index()
+        elif widget == 'sqrt':
+            self.handle_sqrt()
+        elif widget == '^':
+            self.calculate_list.append("**")
+        elif widget == 'exp':
+            self.handle_expo()
+        else:
+            self.calculate_list.append(f"{widget}")
+
+        new_string = "".join(self.calculate_list).replace("**", "^")
+        self.display_text.set(new_string)
+
+    def evaluation(self):
+        try:
+            # set normal color text
+            self.children['!frame'].children['!label'].configure(**LABEL)
+            # make equation for calculation
+            equation = "".join(self.calculate_list).replace("mod", "%")
+            self.display_text.set(f"{eval(equation):.5g}")
+            self.calculate_list = [f"{eval(equation)}"]
+            self.history_list.append([equation, f"= {eval(equation):.5g}"])
+
+        except SyntaxError:
+            # set red text
+            self.children['!frame'].children['!label']['fg'] = 'red'
+
+    def handle_sqrt(self):
+        last_index = self.calculate_list[-1]
+        if last_index.isnumeric() or last_index == ')':
+            self.calculate_list.insert(0, "sqrt(")
+            self.calculate_list.append(")")
+        else:
+            self.calculate_list.append("sqrt(")
+
+    def handle_expo(self):
+        self.calculate_list.append("*(10**")
+
+    def clear_display(self):
+        # Set normal color text
+        self.children['!frame'].children['!label'].configure(**LABEL)
+        self.calculate_list.clear()
+        self.display_text.set('')
+
+    def delete_last_index(self):
+        try:
+            self.calculate_list.pop()
+            insert_string = "".join(self.calculate_list).replace("**", "^")
+            self.display_text.set(insert_string)
+        except IndexError:
+            pass
+
+    def run(self):
+        self.mainloop()
 
     def unused_upgraded_make_keypad(self, column, keys) -> tk.Frame:
         """Create a frame containing buttons for the numeric keys.
@@ -85,58 +163,3 @@ class CalculatorUI(tk.Tk):
             frame.columnconfigure(i, weight=1)
         return frame
 
-    def make_display(self) -> tk.Frame:
-        frame = tk.Frame(self)
-        frame.configure(highlightbackground='#9290C3', highlightthickness=2)
-
-        # make label for display
-        label = tk.Label(frame, textvariable=self.display_text, **FONT,
-                         anchor=tk.E, height=2)
-        label.config(**LABEL)
-
-        # pack
-        label.pack(**PACK, side=tk.LEFT)
-        return frame
-
-    def key_pressed(self, event):
-        widget = event.widget
-        self.calculation(widget['text'])
-
-    def calculation(self, widget):
-        if widget == '=':
-            try:
-                # make equation for calculation
-                equation = "".join(self.calculate_list)
-                self.children['!frame'].children['!label'].configure(**LABEL)
-                self.display_text.set(f"{eval(equation):.5g}")
-                self.calculate_list = [f"{eval(equation)}"]
-                self.history_list.append([equation, f"= {eval(equation):.5g}"])
-
-            except SyntaxError:
-                # if error
-                self.children['!frame'].children['!label']['fg'] = 'red'
-
-        elif widget == 'CLR':
-            self.children['!frame'].children['!label'].configure(**LABEL)
-            self.calculate_list.clear()
-            self.display_text.set('')
-
-        elif widget == 'DEL':
-            try:
-                self.calculate_list.pop()
-                insert_string = "".join(self.calculate_list).replace("**", "^")
-                self.display_text.set(insert_string)
-            except IndexError:
-                pass
-
-        else:
-            new_string = self.display_text.get() + f"{widget}"
-            self.display_text.set(new_string)
-
-            if widget == '^':
-                self.calculate_list.append("**")
-            else:
-                self.calculate_list.append(f"{widget}")
-
-    def run(self):
-        self.mainloop()
