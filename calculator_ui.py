@@ -46,7 +46,7 @@ class CalculatorUI(tk.Tk):
         BUTTON_NUMBERS = ["DEL", "CLR", "mod", "7", "8", "9", "4", "5", "6",
                           "1", "2", "3", '(', "0", ')', '', ".", '']
         MAIN_OP = ['+', '-', '*', '/', "^", "="]
-        COMBOBOX_OP = ["sqrt", "EXP"]
+        COMBOBOX_OP = ["sqrt", "EXP", 'log10', 'log2', 'ln']
 
         keypad = Keypad(self, BUTTON_NUMBERS, 3)
         keypad.bind('<Button-1>', self.key_pressed)
@@ -94,9 +94,9 @@ class CalculatorUI(tk.Tk):
             self.calculation(self.current_fx.get())
 
     def calculation(self, widget):
-        if (self.calculate_list and not self.calculate_list[-1].isdigit()
-                and widget in ['+', '-', '*', '/', '^'] and
-                self.calculate_list[-1] != ')'):
+        operators = '+-*/^'
+        if self.calculate_list and self.calculate_list[-1] in operators \
+                and widget in operators and self.calculate_list[-1] != ')':
             self.calculate_list.pop()
         if widget == '=':
             self.evaluation()
@@ -106,10 +106,12 @@ class CalculatorUI(tk.Tk):
             self.delete_last_index()
         elif widget == '^':
             self.calculate_list.append("^")
-        elif widget == 'sqrt':
-            self.handle_sqrt()
         elif widget == 'EXP':
             self.handle_expo()
+        elif widget in ['sqrt', 'log2', 'log10']:
+            self.handle_op_special(widget)
+        elif widget == 'ln':
+            self.handle_ln()
         else:
             self.calculate_list.append(f"{widget}")
 
@@ -121,36 +123,46 @@ class CalculatorUI(tk.Tk):
             # set normal color text
             self.children['!frame'].children['!label'].configure(**LABEL)
             # make equation for calculation
-            equation = ("".join(self.calculate_list).
-                        replace("mod", "%").
-                        replace("^", "**"))
+            equation = ("".join(self.calculate_list).replace("mod", "%").
+                        replace("^", "**").replace("ln", "log"))
 
             self.display_text.set(f"{eval(equation):.5g}")
-            self.calculate_list = [f"{eval(equation)}"]
+            self.calculate_list = [f"{eval(equation):.5g}"]
             self.history_list.append([equation, f"= {eval(equation):.5g}"])
 
-        except SyntaxError:
+        except (ValueError, ZeroDivisionError, SyntaxError):
             # set red text and sound
             mixer.Sound('error.wav').play()
             self.children['!frame'].children['!label']['fg'] = 'red'
 
-    def handle_sqrt(self):
+    def handle_op_special(self, op):
         try:
             last_index = self.calculate_list[-1]
             if last_index.isnumeric() or last_index == ')':
-                self.calculate_list.insert(0, "sqrt(")
+                self.calculate_list.insert(0, f"{op}(")
                 self.calculate_list.append(")")
             else:
-                self.calculate_list.append("sqrt(")
+                self.calculate_list.append(f"{op}(")
+        except IndexError:
+            self.current_fx.set('')
+
+    def handle_ln(self):
+        try:
+            last_index = self.calculate_list[-1]
+            if last_index.isnumeric() or last_index == ')':
+                self.calculate_list.insert(0, "ln(")
+                self.calculate_list.append(")")
+            else:
+                self.calculate_list.append(f"ln(")
         except IndexError:
             self.current_fx.set('')
 
     def handle_expo(self):
-        if self.calculate_list:
+        try:
             if self.calculate_list[-1] != '*':
                 self.calculate_list.append('*')
             self.calculate_list.append("(10**")
-        else:
+        except IndexError:
             self.current_fx.set("")
 
     def clear_display(self):
