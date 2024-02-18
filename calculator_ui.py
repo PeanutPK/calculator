@@ -3,6 +3,7 @@ from math import *
 from pygame import mixer
 from tkinter import ttk
 from keypad import Keypad
+from history import HistoryWindow
 
 OPTION = {'sticky': tk.NSEW, 'ipadx': 2, 'ipady': 2, 'padx': 2, 'pady': 2}
 FONT = {'font': ("Comic sans MS", 20, 'bold')}
@@ -17,10 +18,10 @@ class CalculatorUI(tk.Tk):
     def __init__(self):
         super().__init__()
         mixer.init()
+        self.title("Calculator")
         self.attributes('-topmost', True)
 
         self.current_fx = tk.StringVar()
-        self.combobox = ttk.Combobox(self, textvariable=self.current_fx)
 
         self.display_text = tk.StringVar()
         self.calculate_list = []
@@ -40,7 +41,7 @@ class CalculatorUI(tk.Tk):
         self.iconphoto(False, img)
 
         BUTTON_NUMBERS = ["DEL", "CLR", "mod", "7", "8", "9", "4", "5", "6",
-                          "1", "2", "3", '(', "0", ')', '', ".", '']
+                          "1", "2", "3", '(', "0", ')', 'his', ".", 'AC']
         MAIN_OP = ['+', '-', '*', '/', "^", "="]
         COMBOBOX_OP = ["sqrt", "EXP", 'log10', 'log2', 'ln']
 
@@ -50,18 +51,21 @@ class CalculatorUI(tk.Tk):
         main_operators = Keypad(self, MAIN_OP, 1)
         main_operators.bind('<Button-1>', self.key_pressed)
 
-        self.combobox['values'] = COMBOBOX_OP
-        self.combobox.bind('<<ComboboxSelected>>', self.key_pressed)
+        combobox = ttk.Combobox(self, textvariable=self.current_fx)
+        combobox['values'] = COMBOBOX_OP
+        combobox.bind('<<ComboboxSelected>>', self.key_pressed)
 
         keypad.configure(**BUTTONCOLOR)
         main_operators.configure(**BUTTONCOLOR)
+        combobox.configure(background='white', foreground='#B784B7')
 
         keypad.config(**BGCOLOR)
         main_operators.config(**BGCOLOR)
+        combobox.config(**BGCOLOR)
 
         self.display_text.set("")
         self.display_label.pack(side=tk.TOP, **PACK)
-        self.combobox.pack(side=tk.TOP, **PACK)
+        combobox.pack(side=tk.TOP, **PACK)
         keypad.pack(side=tk.LEFT, **PACK)
         main_operators.pack(side=tk.TOP, **PACK)
 
@@ -78,9 +82,6 @@ class CalculatorUI(tk.Tk):
         label.pack(**PACK, side=tk.LEFT)
         return frame
 
-    def combo_select(self):
-        selected_fx = self.combobox.get()
-
     def key_pressed(self, event):
         widget = event.widget
         mixer.Sound('press_sound.wav').play()
@@ -96,6 +97,9 @@ class CalculatorUI(tk.Tk):
             self.calculate_list.pop()
         if widget == '=':
             self.evaluation()
+        elif widget == 'AC':
+            self.clear_display()
+            self.history_list.clear()
         elif widget == 'CLR':
             self.clear_display()
         elif widget == 'DEL':
@@ -108,6 +112,8 @@ class CalculatorUI(tk.Tk):
             self.handle_op_special(widget)
         elif widget == 'ln':
             self.handle_ln()
+        elif widget == 'his':
+            self.show_history()
         else:
             self.calculate_list.append(f"{widget}")
 
@@ -121,10 +127,12 @@ class CalculatorUI(tk.Tk):
             # make equation for calculation
             equation = ("".join(self.calculate_list).replace("mod", "%").
                         replace("^", "**").replace("ln", "log"))
-
-            self.display_text.set(f"{eval(equation):.5g}")
-            self.calculate_list = [f"{eval(equation):.5g}"]
-            self.history_list.append([equation, f"= {eval(equation):.5g}"])
+            # calculate and set display
+            result = eval(equation)
+            self.display_text.set(f"{result:.5g}")
+            self.calculate_list = [f"{result:.5g}"]
+            # add to history list
+            self.history_list.append(f"{equation:<20}={result:<15.5g}")
 
         except (ValueError, ZeroDivisionError, SyntaxError):
             # set red text and sound
@@ -160,6 +168,10 @@ class CalculatorUI(tk.Tk):
             self.calculate_list.append("(10**")
         except IndexError:
             self.current_fx.set("")
+
+    def show_history(self):
+        history_window = HistoryWindow(self, self.history_list)
+        history_window.run()
 
     def clear_display(self):
         # Set normal color text
