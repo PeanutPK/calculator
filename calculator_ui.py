@@ -30,10 +30,6 @@ class CalculatorUI(tk.Tk):
         self.display_label = self.make_display()
         self.init_components()
 
-    @property
-    def frame(self):
-        return super()
-
     def init_components(self) -> None:
         """Create a keypad of keys using the keynames list.
         The first keyname is at the top left of the keypad and

@@ -14,6 +14,10 @@ class Keypad(tk.Frame):
 
         self.init_components(columns)
 
+    @property
+    def frame(self):
+        return super()
+
     def init_components(self, columns) -> None:
         """Create a keypad of keys using the keynames list.
         The first keyname is at the top left of the keypad and
