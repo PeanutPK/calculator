@@ -12,6 +12,7 @@ Require pygame package to run if you don't have the package use this command
 ```
 pip install pygame
 ```
+
 To run the file
 ```
 python main.py
