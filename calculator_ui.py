@@ -21,6 +21,7 @@ COMBOBOX_OP = ["sqrt", "EXP", 'log10', 'log2', 'ln']
 class CalculatorUI(tk.Tk):
 
     def __init__(self):
+        """Initialize the object"""
         super().__init__()
         mixer.init()
         self.title("Calculator")
@@ -77,6 +78,7 @@ class CalculatorUI(tk.Tk):
         main_operators.pack(side=tk.TOP, **PACK)
 
     def make_display(self) -> tk.Frame:
+        """Make label that shows the number and calculated result"""
         frame = tk.Frame(self)
         frame.configure(highlightbackground='#9290C3', highlightthickness=2)
 
@@ -90,6 +92,7 @@ class CalculatorUI(tk.Tk):
         return frame
 
     def key_pressed(self, event):
+        """Binding function for widget button and combobox"""
         widget = event.widget
         mixer.Sound('press_sound.wav').play()
         if isinstance(widget, tk.Button):
@@ -98,6 +101,7 @@ class CalculatorUI(tk.Tk):
             self.calculation(self.current_fx.get())
 
     def calculation(self, widget):
+        """Check widget and use assign widget function"""
         operators = '+-*/^'
         if self.calculate_list and self.calculate_list[-1] in operators \
                 and widget in operators and self.calculate_list[-1] != ')':
@@ -128,6 +132,8 @@ class CalculatorUI(tk.Tk):
         self.display_text.set(new_string)
 
     def evaluation(self):
+        """Calculate value using eval() but check
+        and replace un calculate string"""
         try:
             # set normal color text
             self.children['!frame'].children['!label'].configure(**LABEL_STYLE)
@@ -147,6 +153,7 @@ class CalculatorUI(tk.Tk):
             self.children['!frame'].children['!label']['fg'] = 'red'
 
     def handle_op_special(self, op):
+        """Handle operators that can be used with math module"""
         try:
             last_index = self.calculate_list[-1]
             if last_index in MAIN_OP:
@@ -160,6 +167,7 @@ class CalculatorUI(tk.Tk):
             self.current_fx.set('')
 
     def handle_ln(self):
+        """For handling natural logarithm function"""
         try:
             last_index = self.calculate_list[-1]
             if last_index in MAIN_OP:
@@ -171,6 +179,7 @@ class CalculatorUI(tk.Tk):
             self.current_fx.set('')
 
     def handle_expo(self):
+        """For handling exponent function base 10"""
         try:
             if self.calculate_list[-1] != '*':
                 self.calculate_list.append('*')
@@ -179,16 +188,19 @@ class CalculatorUI(tk.Tk):
             self.current_fx.set("")
 
     def show_history(self):
+        """Show valid calculated history"""
         history_window = HistoryWindow(self, self.history_list)
         history_window.run()
 
     def clear_display(self):
+        """Clear the display Label and set the color to default colors"""
         # Set normal color text
         self.children['!frame'].children['!label'].configure(**LABEL_STYLE)
         self.calculate_list.clear()
         self.display_text.set('')
 
     def delete_last_index(self):
+        """Deleted the lsat index of the calculation list"""
         try:
             self.calculate_list.pop()
             insert_string = "".join(self.calculate_list).replace("**", "^")
@@ -197,4 +209,5 @@ class CalculatorUI(tk.Tk):
             pass
 
     def run(self):
+        """Make the window remain displaying"""
         self.mainloop()
