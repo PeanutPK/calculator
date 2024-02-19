@@ -139,7 +139,7 @@ class CalculatorUI(tk.Tk):
             self.display_text.set(f"{result:.5g}")
             self.calculate_list = [f"{result:.5g}"]
             # add to a history list
-            self.history_list.append(f"{equation:<20}={result:<15.5g}")
+            self.history_list.append(f"{equation:<50}={result:<15.5g}")
 
         except (ValueError, ZeroDivisionError, SyntaxError):
             # set red text and sound
@@ -149,7 +149,9 @@ class CalculatorUI(tk.Tk):
     def handle_op_special(self, op):
         try:
             last_index = self.calculate_list[-1]
-            if float(last_index) or last_index == ')':
+            if last_index in MAIN_OP:
+                self.calculate_list.append(f"{op}(")
+            elif last_index == ')' or float(last_index):
                 self.calculate_list.insert(0, f"{op}(")
                 self.calculate_list.append(")")
             else:
@@ -160,11 +162,11 @@ class CalculatorUI(tk.Tk):
     def handle_ln(self):
         try:
             last_index = self.calculate_list[-1]
-            if float(last_index) or last_index == ')':
+            if last_index in MAIN_OP:
+                self.calculate_list.append(f"ln(")
+            elif float(last_index) or last_index == ')':
                 self.calculate_list.insert(0, "ln(")
                 self.calculate_list.append(")")
-            else:
-                self.calculate_list.append(f"ln(")
         except IndexError:
             self.current_fx.set('')
 
